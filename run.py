@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import sys,os
-from time import gmtime, strftime
+from time import localtime, strftime
 
 def main():
     if len(sys.argv)!=2:
@@ -39,14 +39,14 @@ def main():
     print '################################'
 
     currentdir = os.path.abspath('.')
-    ctime = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+    ctime = strftime("%Y-%m-%d-%H-%M-%S", localtime())
 
-    datadir = os.path.abspath(os.path.join(model_topdir,params['model_name'],'data'))
-    modeldir = os.path.abspath(os.path.join(model_topdir ,params['model_name'],'modelfile',ctime))
+    datadir = os.path.abspath(os.path.join(params['model_topdir'],params['model_name'],'data'))
+    modeldir = os.path.abspath(os.path.join(params['model_topdir'],params['model_name'],'modelfile',ctime))
     if not os.path.exists(modeldir):
         os.makedirs(modeldir)
 
-    os.chdir(dirname)
+    os.chdir(modeldir)
 
     flag = False;
     if params['order']=='getdata':
@@ -54,19 +54,19 @@ def main():
         flag = True
 
     if params['order']=='train':
-        cmd = 'cp solver.prototxt ' + modeldir + '/'
+        cmd = ' '.join(['cp ',os.path.join(currentdir,'solver.prototxt'), modeldir])
         os.system(cmd)
-        cmd = 'cp train_val.prototxt ' + modeldir + '/'
+        cmd = ' '.join(['cp ',os.path.join(currentdir,'train_val.prototxt'), modeldir])
         os.system(cmd)
 
         cmd = ' '.join(['python ',os.path.join(currentdir,'train.py'), 'solver.prototxt', '1> train.out 2> train.err'])
         flag = True
 
     if params['order']=='test':
-        cmd = 'cp deploy.prototxt ' + modeldir + '/'
+        cmd = ' '.join(['cp ',os.path.join(currentdir,'deploy.prototxt'), modeldir])
         os.system(cmd)
 
-        cmd = ' '.join(['python', os.path.join(currentdir,'test.py'), 'deploy.prototxt',params['predict_model'],params['predict_filelist'],params['predict_out'],params['predict_gpu'])
+        cmd = ' '.join(['python', os.path.join(currentdir,'test.py'), 'deploy.prototxt',params['predict_model'],params['predict_filelist'],params['predict_out'],params['predict_gpu']])
         flag = True
 
     if params['order']=='test_eval':
