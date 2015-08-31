@@ -1,7 +1,7 @@
-model_name K562_yuchun_g10.CV0.s50w5c0n10sa1mc5
-gpu_num 2
-iter_num_to_test 20000
-data_src zeng@sox2.csail.mit.edu:/cluster/zeng/code/research/regulatory_embedding/data/K562_yuchun_g10/combined7state.CV/CV0/s50w5c0n10sa1mc5/forCaffe/data
-test_iter 100
-topredict 'data/test.txt'
-predictoutput test_iter20000
+model_topdir /media/bigdrive1/zeng/model/
+model_name test2_orishape
+data_src zeng@sox2.csail.mit.edu:/cluster/zeng/code/research/variant-embedding/data/GM12878_H3K36me3_UW_peak/CV10/CV0/native_model_largebatch_orishape/data
+predict_model ''
+predict_filelist 'data/test.txt'
+predict_out test_iter8000
+predict_gpu 2

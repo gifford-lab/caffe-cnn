@@ -1,43 +1,47 @@
 name: "EmbedNet"
-layers {
+layer {
   name: "data"
-  type: HDF5_DATA
+  type: "HDF5Data"
   top: "data"
   top: "label"
   hdf5_data_param {
-    source: "data/train.txt"
+    source: "../data/train.txt"
     batch_size: 100
   }
   include: { phase: TRAIN }
 }
-layers {
+layer {
   name: "data"
-  type: HDF5_DATA
+  type:	"HDF5Data"
   top: "data"
   top: "label"
   hdf5_data_param {
-    source: "data/valid.txt"
+    source: "../data/valid.txt"
     batch_size: 100
   }
   include: { phase: TEST }
 }
-layers {
+layer {
   name: "conv1"
-  type: CONVOLUTION
+  type: "Convolution"
   bottom: "data"
   top: "conv1"
-  blobs_lr: 1          # learning rate multiplier for the filters
-  blobs_lr: 2          # learning rate multiplier for the biases
-  weight_decay: 1      # weight decay multiplier for the filters
-  weight_decay: 0      # weight decay multiplier for the biases
+  param {
+    lr_mult: 1
+	decay_mult: 1
+  }
+  param {
+	lr_mult: 2
+	decay_mult: 0
+  }
   convolution_param {
-	num_output: 100     
+	num_output: 256
     kernel_h: 1
-	kernel_w: 2
+	kernel_w: 15
 	stride_h: 1
 	stride_w: 1
 	pad_h: 0
-	pad_w: 1
+	pad_w: 7
 	weight_filler {
 	  type: "gaussian" # initialize the filters from a Gaussian
       std: 0.01        # distribution with stdev 0.01 (default mean: 0)
@@ -48,47 +52,41 @@ layers {
     }
   }
 }
-layers{
+layer{
   name: "relu1"
-  type: RELU
+  type: "ReLU"
   bottom: "conv1"
   top: "conv1"
 }
-layers{
+layer{
   name: "pool1"
-  type: POOLING
+  type: "Pooling"
   bottom: "conv1"
   top: "pool1"
   pooling_param {
     pool: MAX
 	kernel_h: 1
-	kernel_w: 170
+	kernel_w: 3
 	stride_h: 1
-	stride_w: 2      # step two pixels (in the bottom blob) between pooling regions
+	stride_w: 2     # step two pixels (in the bottom blob) between pooling regions
   }
 }
-#layers {
-#  name: "norm1"
-#  type: LRN
-#  bottom: "pool1"
-#  top: "norm1"
-#  lrn_param{
-#    local_size: 5
-#    alpha: 0.0001
-#    beta: 0.75
-#  }
-#}
-layers {
+
+layer {
   name: "fc1"
-  type: INNER_PRODUCT
+  type: "InnerProduct"
   bottom: "pool1"
   top: "fc1"
-  blobs_lr: 1          # learning rate multiplier for the filters
-  blobs_lr: 2          # learning rate multiplier for the biases
-  weight_decay: 1      # weight decay multiplier for the filters
-  weight_decay: 0      # weight decay multiplier for the biases
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 2
+    decay_mult: 0
+  }
   inner_product_param {
-    num_output: 128
+    num_output: 256
     weight_filler {
       type: "gaussian"
       std: 0.01
@@ -99,15 +97,15 @@ layers {
 	}
   }
 }
-layers{
-  name: "relu1"
-  type: RELU
+layer{
+  name: "relu4"
+  type: "ReLU"
   bottom: "fc1"
   top: "fc1"
 }
-layers {
+layer {
   name: "drop1"
-  type: DROPOUT
+  type: "Dropout"
   bottom: "fc1"
   top: "fc1"
   dropout_param{
@@ -115,17 +113,21 @@ layers {
   }
 }
 
-layers {
+layer {
   name: "fc2"
-  type: INNER_PRODUCT
+  type: "InnerProduct"
   bottom: "fc1"
   top: "fc2"
-  blobs_lr: 1          # learning rate multiplier for the filters
-  blobs_lr: 2          # learning rate multiplier for the biases
-  weight_decay: 1      # weight decay multiplier for the filters
-  weight_decay: 0      # weight decay multiplier for the biases
+  param {
+	lr_mult: 1
+	decay_mult: 1
+  }
+  param {
+    lr_mult: 2
+	decay_mult: 0
+  }
   inner_product_param {
-    num_output: 8
+    num_output: 2
     weight_filler {
       type: "gaussian"
       std: 0.01
@@ -137,16 +139,16 @@ layers {
   }
 }
 
-layers {
+layer {
   name: "loss6"
-  type: SOFTMAX_LOSS
+  type: "SoftmaxWithLoss"
   bottom: "fc2"
   bottom: "label"
   top: "loss"
 }
-layers {
+layer {
   name: "accuracy"
-  type: ACCURACY
+  type: "Accuracy"
   bottom: "fc2"
   bottom: "label"
   top: "accuracy"

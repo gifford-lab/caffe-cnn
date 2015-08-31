@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-import sys
-import os
+import sys,os
+from time import gmtime, strftime
 
 def main():
     if len(sys.argv)!=2:
@@ -18,53 +18,60 @@ def main():
         line = paramdata[i].strip().split()
         params.update({line[0]:line[1]})
 
+    assert 'model_topdir' in params.keys()
+    assert 'predict_model' in params.keys()
+    assert 'predict_filelist' in params.keys()
+    assert 'predict_out' in params.keys()
+    assert 'predict_gpu' in params.keys()
     assert 'order' in params.keys()
     assert 'model_name' in params.keys()
-    assert 'gpu_num' in params.keys()
-    assert 'iter_num_to_test' in params.keys()
     assert 'data_src' in params.keys()
 
     print '####### Parameters Input #######'
     print 'order: ' + params['order']
     print 'model_name: ' + params['model_name']
-    print 'gpu_num: ' + params['gpu_num']
-    print 'iter_num_to_test: ' + params['iter_num_to_test']
     print 'data_src: ' + params['data_src']
+    print 'model_topdir: ' + params['model_topdir']
+    print 'predict_model: ' + params['predict_model']
+    print 'predict_filelist: ' + params['predict_filelist']
+    print 'predict_out: ' + params['predict_out']
+    print 'predict_gpu: ' + params['predict_gpu']
     print '################################'
 
     currentdir = os.path.abspath('.')
-    dirname = os.path.abspath('/media/bigdrive1/zeng/model/' + params['model_name'])
-    if not os.path.exists(dirname):
-        os.makedirs(dirname)
+    ctime = strftime("%Y-%m-%d %H:%M:%S", gmtime())
 
-    cmd = 'cp solver.prototxt ' + dirname + '/'
-    os.system(cmd)
-    cmd = 'cp train_val.prototxt ' + dirname + '/'
-    os.system(cmd)
-    cmd = 'cp deploy.prototxt ' + dirname + '/'
-    os.system(cmd)
+    datadir = os.path.abspath(os.path.join(model_topdir,params['model_name'],'data'))
+    modeldir = os.path.abspath(os.path.join(model_topdir ,params['model_name'],'modelfile',ctime))
+    if not os.path.exists(modeldir):
+        os.makedirs(modeldir)
 
     os.chdir(dirname)
 
     flag = False;
     if params['order']=='getdata':
-        cmd = 'scp -r ' + params['data_src']  + ' .'
+        cmd = ' '.join(['scp -r ',params['data_src']+'/*',params['datadir']])
         flag = True
 
     if params['order']=='train':
-        cmd = 'python ' + currentdir + '/train.py solver.prototxt ' +  params['gpu_num'] + ' 1> train.out 2> train.err'
+        cmd = 'cp solver.prototxt ' + modeldir + '/'
+        os.system(cmd)
+        cmd = 'cp train_val.prototxt ' + modeldir + '/'
+        os.system(cmd)
+
+        cmd = ' '.join(['python ',os.path.join(currentdir,'train.py'), 'solver.prototxt', '1> train.out 2> train.err'])
         flag = True
 
-    if params['order']=='valid':
-        cmd = 'python ' + currentdir + '/valid.py  train_val.prototxt  train_iter_' + params['iter_num_to_test'] + '.caffemodel ' + params['test_iter'] + ' ' + params['gpu_num'] + ' 1> valid_iter' + params['iter_num_to_test'] + '.out 2> valid_iter' + params['iter_num_to_test'] + '.err'
-        flag = True
     if params['order']=='test':
-        cmd = 'python ' + currentdir + '/test.py deploy.prototxt train_iter_' + params['iter_num_to_test'] + '.caffemodel ' + params['topredict'] + ' ' + params['predictoutput'] + ' ' + params['gpu_num']
-        flag = True
-    if params['order']=='test_eval':
-        cmd = ' '.join(['python' ,currentdir + '/test_eval.py' , params['predictoutput'],params['topredict'] ])
+        cmd = 'cp deploy.prototxt ' + modeldir + '/'
+        os.system(cmd)
+
+        cmd = ' '.join(['python', os.path.join(currentdir,'test.py'), 'deploy.prototxt',params['predict_model'],params['predict_filelist'],params['predict_out'],params['predict_gpu'])
         flag = True
 
+    if params['order']=='test_eval':
+        cmd = ' '.join(['python' ,os.path.join(currentdir,'test_eval.py') , params['predict_out'],params['predict_filelist'] ])
+        flag = True
 
     if not flag:
         print 'Cannot recognize order; Exit'

@@ -8,6 +8,8 @@ real_f = sys.argv[2]
 
 with open(pred_f,'r') as f:
     pred = [np.asarray([float(y) for y in x.strip().split()]).argsort()[-1] for x in f]
+    f.seek(0)
+    pred_numeric = [np.asarray([float(y) for y in x.strip().split()])[-1] for x in f]
 
 real = []
 with open(real_f,'r') as f:
@@ -23,6 +25,7 @@ real = np.concatenate(np.asarray(real))
 accuracy = np.sum([1 for i in range(len(real)) if real[i]==pred[i]])
 accuracy = accuracy / float(len(real))
 print accuracy
-#fpr, tpr, thresholds = roc_curve(real,pred)
-#roc_auc = auc(fpr, tpr)
-#print 'auc: %f' % roc_auc
+
+fpr, tpr, thresholds = roc_curve(real,pred_numeric)
+roc_auc = auc(fpr, tpr)
+print 'auc: %f' % roc_auc

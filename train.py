@@ -7,13 +7,10 @@ import caffe
 
 
 def main():
-    if len(sys.argv) != 3:
+    if len(sys.argv) != 2:
         print 'Usage: python train.py solver_file GPUnum'
         sys.exit(2)
     solver_file = sys.argv[1]
-    gpunum = int(sys.argv[2])
-
-    caffe.set_device(gpunum)
     caffe.set_mode_gpu()
 
     solver = caffe.get_solver(solver_file)

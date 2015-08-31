@@ -1,6 +1,6 @@
 # Make sure that caffe is on the python path:
 caffe_root = '../'  # this file is expected to be in {caffe_root}/examples
-import sys
+import sys,os
 sys.path.insert(0, caffe_root + 'python')
 
 import caffe
@@ -23,9 +23,9 @@ def main():
     caffe.set_mode_gpu()
 
     net = caffe.Net(net_file, model_file,caffe.TEST)
-
+    predict_dir = os.path.dirname(os.path.dirname(predict_file))
     with open(predict_file,'r') as f:
-        files = [x.strip() for x in f]
+        files = [os.path.join(predict_dir,x.strip()) for x in f]
 
     with open(outfile,'w') as f:
         for batchfile in files:
