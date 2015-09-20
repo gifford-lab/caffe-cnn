@@ -1,6 +1,6 @@
 net: "train_val.prototxt"
 test_iter: 40
-test_interval: 500
+test_interval: 200
 base_lr: 0.01
 #lr_policy: "step"
 lr_policy: "fixed"
@@ -8,11 +8,15 @@ lr_policy: "fixed"
 #stepsize: 2000
 display: 500
 max_iter: 8000
-#momentum: 0.9
+#momentum: 0.95
 weight_decay: 0.0005
-snapshot: 500
+snapshot: 10000
 snapshot_prefix: "train"
 solver_mode: GPU
-solver_type: ADAGRAD
+#solver_type: ADAGRAD
+solver_type: RMSPROP
+rms_decay: 0.99
+#solver_type: ADADELTA
+#delta: 1e-6
 #solver_type: NESTEROV
 device_id: 2

@@ -1,7 +1,8 @@
 model_topdir /media/bigdrive1/zeng/model/
-model_name test2_orishape
-data_src zeng@sox2.csail.mit.edu:/cluster/zeng/code/research/variant-embedding/data/GM12878_H3K36me3_UW_peak/CV10/CV0/native_model_largebatch_orishape/data
+model_name NFKB_peakPred_101bp
+data_src zeng@sox2.csail.mit.edu:/cluster/zeng/code/research/kmer-analysis/postprocess/compare_with_ctr/peakPred/embedding-CNN/target/NFKB/data
 predict_model ''
+predict_iter ''
 predict_filelist 'data/test.txt'
 predict_out test_iter8000
 predict_gpu 2

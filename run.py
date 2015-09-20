@@ -42,18 +42,22 @@ def main():
     ctime = strftime("%Y-%m-%d-%H-%M-%S", localtime())
 
     datadir = os.path.abspath(os.path.join(params['model_topdir'],params['model_name'],'data'))
-    modeldir = os.path.abspath(os.path.join(params['model_topdir'],params['model_name'],'modelfile',ctime))
-    if not os.path.exists(modeldir):
-        os.makedirs(modeldir)
-
-    os.chdir(modeldir)
 
     flag = False;
     if params['order']=='getdata':
-        cmd = ' '.join(['scp -r ',params['data_src']+'/*',params['datadir']])
+        if os.path.exists(datadir):
+            print 'data folder exists, will remove'
+            os.system('rm -r '+datadir)
+        os.makedirs(datadir)
+
+        cmd = ' '.join(['scp -r ',params['data_src']+'/*',datadir])
         flag = True
 
     if params['order']=='train':
+        modeldir = os.path.abspath(os.path.join(params['model_topdir'],params['model_name'],ctime))
+        if not os.path.exists(modeldir):
+            print 'model folder exists, will remove'
+            os.makedirs(modeldir)
         cmd = ' '.join(['cp ',os.path.join(currentdir,'solver.prototxt'), modeldir])
         os.system(cmd)
         cmd = ' '.join(['cp ',os.path.join(currentdir,'train_val.prototxt'), modeldir])
@@ -63,13 +67,17 @@ def main():
         flag = True
 
     if params['order']=='test':
+        modeldir = os.path.abspath(os.path.join(params['model_topdir'],params['model_name'],params['predict_model']))
         cmd = ' '.join(['cp ',os.path.join(currentdir,'deploy.prototxt'), modeldir])
         os.system(cmd)
 
-        cmd = ' '.join(['python', os.path.join(currentdir,'test.py'), 'deploy.prototxt',params['predict_model'],params['predict_filelist'],params['predict_out'],params['predict_gpu']])
+        os.chdir(modeldir)
+        cmd = ' '.join(['python', os.path.join(currentdir,'test.py'), 'deploy.prototxt',params['predict_iter'],params['predict_filelist'],params['predict_out'],params['predict_gpu']])
         flag = True
 
     if params['order']=='test_eval':
+        modeldir = os.path.abspath(os.path.join(params['model_topdir'],params['model_name'],params['predict_model']))
+        os.chdir(modeldir)
         cmd = ' '.join(['python' ,os.path.join(currentdir,'test_eval.py') , params['predict_out'],params['predict_filelist'] ])
         flag = True
 
