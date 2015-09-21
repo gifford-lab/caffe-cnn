@@ -6,3 +6,6 @@ predict_iter ''
 predict_filelist 'data/test.txt'
 predict_out test_iter8000
 predict_gpu 2
+solver_file ''
+trainval_file ''
+deploy_file ''

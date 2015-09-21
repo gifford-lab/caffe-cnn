@@ -1,26 +1,15 @@
 # Make sure that caffe is on the python path:
-caffe_root = '../'  # this file is expected to be in {caffe_root}/examples
-import sys,os
-sys.path.insert(0, caffe_root + 'python')
+import sys,os,caffe,numpy as np,h5py
 
-import caffe
-import numpy as np
-import h5py
-from sklearn.metrics import roc_curve, auc,accuracy_score
-
-def main():
-    if len(sys.argv) != 6:
-        print 'Usage: python test.py net_file model_file predict_file outfile gpunum'
-        sys.exit(2)
-
-    net_file = sys.argv[1]
-    model_file = sys.argv[2]
-    predict_file = sys.argv[3]
-    outfile =  sys.argv[4]
-    gpunum = int(sys.argv[5])
+def test(net_file,model_dir,predict_file,gpunum,outfile=''):
 
     caffe.set_device(gpunum)
     caffe.set_mode_gpu()
+
+    best_iter = getBestRun(model_dir,'train.err')
+    model_file = os.path.join(model_dir,'train_iter_'+best_iter+'.caffemodel')
+    if outfile =='':
+        outfile = os.path.join(model_dir,'bestiter_'+best_iter+'.pred')
 
     net = caffe.Net(net_file, model_file,caffe.TEST)
     predict_dir = os.path.dirname(os.path.dirname(predict_file))
@@ -36,5 +25,21 @@ def main():
             for out in prob:
                 f.write('%s\n' % '\t'.join([str(x) for x in out]))
 
-if __name__ == '__main__':
-    main()
+def getBestRun(modeldir,logfile):
+    with open(os.path.join(modeldir,logfile),'r') as f:
+        data = [x for x in f]
+
+    pick = [i for i in range(len(data)) if 'Testing net' in data[i]]
+    iter_cnt = []
+    acc_cnt = []
+    for i in pick:
+        x = data[i].split(' ')
+        idx = x.index('Iteration')+1
+        iter_cnt.append(x[idx].split(',')[0])
+
+        x = data[i+1].split(' ')
+        idx = x.index('accuracy')+2
+        acc_cnt.append(float(x[idx]))
+
+    return iter_cnt[np.argmax(acc_cnt)]
+
