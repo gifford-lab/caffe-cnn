@@ -12,7 +12,7 @@ def test(net_file,model_dir,predict_file,gpunum,outfile=''):
         outfile = os.path.join(model_dir,'bestiter_'+best_iter+'.pred')
 
     net = caffe.Net(net_file, model_file,caffe.TEST)
-    predict_dir = os.path.dirname(os.path.dirname(predict_file))
+    predict_dir = os.path.dirname(predict_file)
     with open(predict_file,'r') as f:
         files = [os.path.join(predict_dir,x.strip()) for x in f]
 

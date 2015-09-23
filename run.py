@@ -38,13 +38,20 @@ def main():
         os.makedirs(datadir)
 
         cmd = ' '.join(['scp -r ',params['data_src']+'/*',datadir])
+        os.system(cmd)
         flag = True
 
     if params['order']=='train':
-        modeldir = os.path.abspath(os.path.join(params['model_topdir'],ctime))
-        if not os.path.exists(modeldir):
+        if 'modelname' in params.keys():
+            modeldir = os.path.abspath(os.path.join(params['model_topdir'],params['modelname']))
+        else:
+            modeldir = os.path.abspath(os.path.join(params['model_topdir'],ctime))
+
+        if os.path.exists(modeldir):
             print 'model folder exists, will remove'
-            os.makedirs(modeldir)
+            os.system('rm -r ' + modeldir)
+        os.makedirs(modeldir)
+
         cmd = ' '.join(['cp ',params['solver_file'], modeldir])
         os.system(cmd)
         cmd = ' '.join(['cp ',params['trainval_file'], modeldir])
