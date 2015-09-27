@@ -63,7 +63,7 @@ def main():
         #train(os.path.basename(params['solver_file']),modeldir)
         outlog = os.path.join(modeldir,'train.out')
         errlog = os.path.join(modeldir,'train.err')
-        os.system(' '.join(['python',os.path.join(params['codedir'],'train.py'),os.path.basename(params['solver_file']),modeldir,'1 >',outlog,'2>',errlog]))
+        os.system(' '.join(['python',os.path.join(params['codedir'],'train.py'),os.path.basename(params['solver_file']),modeldir,params['gpunum'],'1 >',outlog,'2>',errlog]))
         flag = True
 
     if params['order']=='test':
@@ -72,7 +72,7 @@ def main():
         os.system(cmd)
 
         os.chdir(modeldir)
-        test(params['deploy_file'],modeldir,os.path.join(params['model_topdir'],params['predict_filelist']),int(params['predict_gpu']))
+        test(params['deploy_file'],modeldir,os.path.join(params['model_topdir'],params['predict_filelist']),int(params['gpunum']))
         flag = True
 
     if params['order']=='test_eval':
