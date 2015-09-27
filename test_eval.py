@@ -1,3 +1,5 @@
+import matplotlib
+matplotlib.use('Agg')
 import sys,numpy as np
 import scipy,h5py,os
 from scipy import stats

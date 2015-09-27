@@ -1,4 +1,6 @@
 # Make sure that caffe is on the python path:
+import matplotlib
+matplotlib.use('Agg')
 import sys,caffe,os
 #def train(solver_file,outdir):
 solver_file = sys.argv[1]

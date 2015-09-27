@@ -1,4 +1,6 @@
 # Make sure that caffe is on the python path:
+import matplotlib
+matplotlib.use('Agg')
 import sys,os,caffe,numpy as np,h5py
 
 def test(net_file,model_dir,predict_file,gpunum,outfile=''):

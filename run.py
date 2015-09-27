@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+import matplotlib
+matplotlib.use('Agg')
 import sys,os
 from time import localtime, strftime
 #from train import train
