@@ -78,7 +78,8 @@ def main():
     if params['order']=='test_eval':
         modeldir = os.path.abspath(os.path.join(params['model_topdir'],params['predict_model']))
         model = [x for x in os.listdir(modeldir) if os.path.isfile(os.path.join(modeldir,x)) and 'bestiter' in x][0]
-        test_eval(os.path.join(modeldir,model),os.path.join(params['model_topdir'],params['predict_filelist']))
+        outfile = os.path.join(modeldir,model + '.eval')
+        test_eval(os.path.join(modeldir,model),os.path.join(params['model_topdir'],params['predict_filelist']),outfile)
         flag = True
 
     if not flag:

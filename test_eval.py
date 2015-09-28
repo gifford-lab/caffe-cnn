@@ -5,7 +5,7 @@ import scipy,h5py,os
 from scipy import stats
 from sklearn.metrics import roc_curve, auc,accuracy_score
 
-def test_eval(pred_f,real_f):
+def test_eval(pred_f,real_f,outfile):
 
     with open(pred_f,'r') as f:
         pred = [np.asarray([float(y) for y in x.strip().split()]).argsort()[-1] for x in f]
@@ -31,3 +31,7 @@ def test_eval(pred_f,real_f):
     fpr, tpr, thresholds = roc_curve(real,pred_numeric)
     roc_auc = auc(fpr, tpr)
     print 'auc: %f' % roc_auc
+
+    with open(outfile,'w') as f:
+        f.write('Accuracy:%f\n' % accuracy)
+        f.write('ROCAUC:%f\n' % roc_auc)
