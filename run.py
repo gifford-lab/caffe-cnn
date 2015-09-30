@@ -45,14 +45,17 @@ def main():
 
     if params['order']=='train':
         if 'modelname' in params.keys():
-            modeldir = os.path.abspath(os.path.join(params['model_topdir'],params['modelname']))
+            modeldir = os.path.abspath(os.path.join(params['model_topdir'],params['modelname'],params['model_batchname']))
         else:
-            modeldir = os.path.abspath(os.path.join(params['model_topdir'],ctime))
+            modeldir = os.path.abspath(os.path.join(params['model_topdir'],params['modelname'],ctime))
 
         if os.path.exists(modeldir):
             print 'model folder exists, will remove'
             os.system('rm -r ' + modeldir)
         os.makedirs(modeldir)
+
+        cmd = ' '.join(['ln -s',os.path.join(params['model_topdir'],'data'),os.path.join(params['model_topdir'],params['modelname'],'data')])
+        os.system(cmd)
 
         cmd = ' '.join(['cp ',params['solver_file'], modeldir])
         os.system(cmd)
@@ -67,7 +70,7 @@ def main():
         flag = True
 
     if params['order']=='test':
-        modeldir = os.path.abspath(os.path.join(params['model_topdir'],params['predict_model']))
+        modeldir = os.path.abspath(os.path.join(params['model_topdir'],params['modelname'],params['predictmodel_batch']))
         cmd = ' '.join(['cp',params['deploy_file'], modeldir])
         os.system(cmd)
 
@@ -76,7 +79,7 @@ def main():
         flag = True
 
     if params['order']=='test_eval':
-        modeldir = os.path.abspath(os.path.join(params['model_topdir'],params['predict_model']))
+        modeldir = os.path.abspath(os.path.join(params['model_topdir'],params['modelname'],params['predictmodel_batch']))
         model = [x for x in os.listdir(modeldir) if os.path.isfile(os.path.join(modeldir,x)) and 'bestiter' in x][0]
         outfile = os.path.join(modeldir,model + '.eval')
         test_eval(os.path.join(modeldir,model),os.path.join(params['model_topdir'],params['predict_filelist']),outfile)
