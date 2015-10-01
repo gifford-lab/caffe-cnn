@@ -54,7 +54,10 @@ def main():
             os.system('rm -r ' + modeldir)
         os.makedirs(modeldir)
 
-        cmd = ' '.join(['ln -s',os.path.join(params['model_topdir'],'data'),os.path.join(params['model_topdir'],params['modelname'],'data')])
+        datadir = os.path.join(params['model_topdir'],params['modelname'],'data')
+        if not os.path.exists(datadir):
+            os.makedirs(datadir)
+        cmd = ' '.join(['sudo mount -o bind',os.path.join(params['model_topdir'],'data'),datadir])
         os.system(cmd)
 
         cmd = ' '.join(['cp ',params['solver_file'], modeldir])
