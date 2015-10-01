@@ -16,7 +16,7 @@ def test(net_file,model_dir,predict_file,gpunum,outfile=''):
     net = caffe.Net(net_file, model_file,caffe.TEST)
     predict_dir = os.path.dirname(predict_file)
     with open(predict_file,'r') as f:
-        files = [os.path.join(predict_dir,x.strip()) for x in f]
+        files = [os.path.join(model_dir,x.strip()) for x in f]
 
     with open(outfile,'w') as f:
         for batchfile in files:

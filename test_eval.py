@@ -14,12 +14,13 @@ def test_eval(pred_f,real_f,outfile):
 
     real = []
     realdir = os.path.dirname(real_f)
+    preddir = os.path.dirname(pred_f)
     with open(real_f,'r') as f:
         files = [x.strip() for x in f]
 
 
     for batchfile in files:
-        fi    = h5py.File(os.path.join(realdir,batchfile), 'r')
+        fi    = h5py.File(os.path.join(preddir,batchfile), 'r')
         real.append(np.asarray(fi['label']))
 
     real = np.concatenate(np.asarray(real))

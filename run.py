@@ -45,20 +45,14 @@ def main():
 
     if params['order']=='train':
         if 'modelname' in params.keys():
-            modeldir = os.path.abspath(os.path.join(params['model_topdir'],params['modelname'],params['model_batchname']))
+            modeldir = os.path.abspath(os.path.join(params['model_topdir'],params['modelname'],params['model_batchname'],'output'))
         else:
-            modeldir = os.path.abspath(os.path.join(params['model_topdir'],params['modelname'],ctime))
+            modeldir = os.path.abspath(os.path.join(params['model_topdir'],params['modelname'],ctime,'output'))
 
         if os.path.exists(modeldir):
             print 'model folder exists, will remove'
             os.system('rm -r ' + modeldir)
         os.makedirs(modeldir)
-
-        datadir = os.path.join(params['model_topdir'],params['modelname'],'data')
-        if not os.path.exists(datadir):
-            os.makedirs(datadir)
-        cmd = ' '.join(['sudo mount -o bind',os.path.join(params['model_topdir'],'data'),datadir])
-        os.system(cmd)
 
         cmd = ' '.join(['cp ',params['solver_file'], modeldir])
         os.system(cmd)
@@ -69,11 +63,11 @@ def main():
         #train(os.path.basename(params['solver_file']),modeldir)
         outlog = os.path.join(modeldir,'train.out')
         errlog = os.path.join(modeldir,'train.err')
-        os.system(' '.join(['python',os.path.join(params['codedir'],'train.py'),os.path.basename(params['solver_file']),modeldir,params['gpunum'],'1 >',outlog,'2>',errlog]))
+        os.system(' '.join(['python',os.path.join(params['codedir'],'train.py'),os.path.join(modeldir,params['solver_file']),modeldir,params['gpunum'],'1 >',outlog,'2>',errlog]))
         flag = True
 
     if params['order']=='test':
-        modeldir = os.path.abspath(os.path.join(params['model_topdir'],params['modelname'],params['predictmodel_batch']))
+        modeldir = os.path.abspath(os.path.join(params['model_topdir'],params['modelname'],params['predictmodel_batch'],'output'))
         cmd = ' '.join(['cp',params['deploy_file'], modeldir])
         os.system(cmd)
 
@@ -82,7 +76,7 @@ def main():
         flag = True
 
     if params['order']=='test_eval':
-        modeldir = os.path.abspath(os.path.join(params['model_topdir'],params['modelname'],params['predictmodel_batch']))
+        modeldir = os.path.abspath(os.path.join(params['model_topdir'],params['modelname'],params['predictmodel_batch'],'output'))
         model = [x for x in os.listdir(modeldir) if os.path.isfile(os.path.join(modeldir,x)) and 'bestiter' in x][0]
         outfile = os.path.join(modeldir,model + '.eval')
         test_eval(os.path.join(modeldir,model),os.path.join(params['model_topdir'],params['predict_filelist']),outfile)
