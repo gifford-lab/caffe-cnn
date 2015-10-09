@@ -34,7 +34,7 @@ def getBestRun(modeldir,logfile):
     pick = [i for i in range(len(data)) if 'Testing net' in data[i]]
     iter_cnt = []
     acc_cnt = []
-    for i in pick:
+    for i in pick[1:]:
         x = data[i].split(' ')
         idx = x.index('Iteration')+1
         iter_cnt.append(x[idx].split(',')[0])
