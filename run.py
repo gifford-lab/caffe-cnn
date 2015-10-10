@@ -6,6 +6,8 @@ from time import localtime, strftime
 #from train import train
 from test import test
 from test_eval import test_eval
+from os import system,makedirs
+from os.path import join,abspath,exists
 
 def main():
     if len(sys.argv)!=3:
@@ -44,42 +46,50 @@ def main():
         flag = True
 
     if params['order']=='train':
-        if 'modelname' in params.keys():
-            modeldir = os.path.abspath(os.path.join(params['model_topdir'],params['modelname'],params['model_batchname'],'output'))
-        else:
-            modeldir = os.path.abspath(os.path.join(params['model_topdir'],params['modelname'],ctime,'output'))
+        if not 'modelname' in params.keys():
+            params['model_batchname'] = ctime
 
-        if os.path.exists(modeldir):
+        modeltopdir = abspath(join(params['model_topdir'],params['modelname'],params['model_batchname']))
+        if os.path.exists(modeltopdir):
             print 'model folder exists, will remove'
-            os.system('rm -r ' + modeldir)
-        os.makedirs(modeldir)
+            os.system('rm -r ' + modeltopdir)
+        os.makedirs(modeltopdir)
 
-        cmd = ' '.join(['cp ',params['solver_file'], modeldir])
-        os.system(cmd)
-        cmd = ' '.join(['cp ',params['trainval_file'], modeldir])
-        os.system(cmd)
+        for trial in range(int(params['trial_num'])):
+            modeldir = join(modeltopdir,'trial'+str(trial))
+            makedirs(modeldir)
+            cmd = ' '.join(['cp ',params['solver_file'], modeldir])
+            os.system(cmd)
+            cmd = ' '.join(['cp ',params['trainval_file'], modeldir])
+            os.system(cmd)
 
-        os.chdir(modeldir)
-        #train(os.path.basename(params['solver_file']),modeldir)
-        outlog = os.path.join(modeldir,'train.out')
-        errlog = os.path.join(modeldir,'train.err')
-        os.system(' '.join(['python',os.path.join(params['codedir'],'train.py'),os.path.join(modeldir,params['solver_file']),modeldir,params['gpunum'],'1 >',outlog,'2>',errlog]))
+            os.chdir(modeldir)
+            #train(os.path.basename(params['solver_file']),modeldir)
+            outlog = os.path.join(modeldir,'train.out')
+            errlog = os.path.join(modeldir,'train.err')
+            os.system(' '.join(['python',os.path.join(params['codedir'],'train.py'),os.path.join(modeldir,params['solver_file']),modeldir,params['gpunum'],'1 >',outlog,'2>',errlog]))
         flag = True
 
     if params['order']=='test':
-        modeldir = os.path.abspath(os.path.join(params['model_topdir'],params['modelname'],params['predictmodel_batch'],'output'))
-        cmd = ' '.join(['cp',params['deploy_file'], modeldir])
+        modeltopdir = os.path.abspath(os.path.join(params['model_topdir'],params['modelname'],params['predictmodel_batch']))
+        testdir = join(modeltopdir,'best_trial')
+        if exists(testdir):
+            print 'testdir '+testdir+' exists, will be removed'
+            system('rm -r ' + testdir)
+        makedirs(testdir)
+        cmd = ' '.join(['cp',params['deploy_file'], testdir])
         os.system(cmd)
-
-        os.chdir(modeldir)
-        test(params['deploy_file'],modeldir,os.path.join(params['model_topdir'],params['predict_filelist']),int(params['gpunum']))
+        os.chdir(testdir)
+        test(params['deploy_file'],modeltopdir,os.path.join(params['model_topdir'],params['predict_filelist']),int(params['gpunum']),int(params['trial_num']),testdir)
         flag = True
 
     if params['order']=='test_eval':
         modeldir = os.path.abspath(os.path.join(params['model_topdir'],params['modelname'],params['predictmodel_batch'],'output'))
-        model = [x for x in os.listdir(modeldir) if os.path.isfile(os.path.join(modeldir,x)) and 'bestiter' in x][0]
-        outfile = os.path.join(modeldir,model + '.eval')
-        test_eval(os.path.join(modeldir,model),os.path.join(params['model_topdir'],params['predict_filelist']),outfile)
+        pred_topdir = abspath(join(params['model_topdir'],params['modelname'],params['predictmodel_batch'],'best_trial'))
+        pred_f = join(pred_topdir,'bestiter.pred')
+        real_f = join(params['model_topdir'],params['predict_filelist'])
+        outfile = join(pred_topdir,'bestiter.pred.eval')
+        test_eval(pred_f,real_f,outfile)
         flag = True
 
     if not flag:
