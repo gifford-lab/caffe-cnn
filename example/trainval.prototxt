@@ -107,7 +107,7 @@ layer {
   bottom: "fc1"
   top: "fc1"
   dropout_param{
-    dropout_ratio: %{dropout_ratio}%
+    dropout_ratio: 0.5
   }
 }
 

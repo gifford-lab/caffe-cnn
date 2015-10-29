@@ -4,16 +4,21 @@ A platform for training and testing convolutional neural network (CNN) based on 
 ### Install Caffe and pycaffe
 Following [instruction](http://caffe.berkeleyvision.org/installation.html) to install Caffe and pycaffe.
 
-### Prepare training data
-Training, validating and testing data should be prepared as 4-D matrix iteration * channel * width * height in HDF5 format.
+### Prepare data
+All the data should be put under $model_topdir$/data/, where `model_topdir` is the top folder of the output. 
 
-In deep learning, the data size are usually enormous, making it hard to load the datasets into memory. A good practice is to partition the dataset into small batches. For train/valid/test set, we require the user to provide a txt file that specify the ABSOLUTE path to all the hdf5 files, one row per batch.
+In the near future, we will provide the user with a script to generate all the data needed for CNN application on 1-D genomic sequence.
 
-+ train.txt
-+ valid.txt
-+ test.txt
+#### Actual data
+Training, validating and testing data should be prepared as 4-D matrix with dimension _iteration * channel * width * height_ in HDF5 format.
 
-For example if we have the following TRAINING data files:
+In deep learning, the data size are usually enormous, making it hard to load the datasets into memory. A good practice is to partition the dataset into small batches. 
+
+#### Data manifest
+For each of train/valid/test set, we require the user to provide a txt file  to specify the ABSOLUTE PATH of all the HDF5 batches.
+
+
+For example if we have the following TRAINING data files under $model_topdir$/data/
 
 + train.batch0.hd5
 + train.batch1.hd5
@@ -22,13 +27,28 @@ For example if we have the following TRAINING data files:
 Then the content of train.txt should be :
 
 ```
-/topfolder/train.batch0.hd5
-/topfolder/train.batch1.hd5
+/$model_topdir$/data/train.batch0.hd5
+/$model_topdir$/data/train.batch1.hd5
 ...
 ```
 
+In sum the files under /$model_topdir$/data/ are:
 
-### Model files for Caffe
++ train.txt
++ valid.txt
++ test.txt
++ train.batch0.hd5
++ train.batch1.hd5
++ ... (for more batches)
++ valid.batch0.hd5
++ valid.batch1.hd5
++ ... (for more batches)
++ test.batch0.hd5
++ test.batch1.hd5
++ ... (for more batches)
+
+
+### Prepare model files for Caffe
 Refer to [here](http://caffe.berkeleyvision.org/) and [here](https://github.com/BVLC/caffe/tree/master/models) for instructions and examples in generating the following three files: 
 
 (as exemplified under example/)
@@ -39,8 +59,9 @@ Refer to [here](http://caffe.berkeleyvision.org/) and [here](https://github.com/
 
 Note that in trainval.prototxt, data should be input through hdf5 layer. And the data source (for training as an example) should be either $../../../data/train.txt$ or absolute path $model_topdir$/data/train.txt.
 
-### Param.list
+### Prepare param.list
 This file specificies all the parameters in the model. 
+
 Example : (example/param.list)
 
 ```
@@ -59,7 +80,7 @@ trial_num 3
 ```
 
 + `model_topdir`: The top output folder
-+ `data_src`: The folder containing the train.txt, valid.txt and test.txt files. With order `getdata`, these files will be copied to $model_topdir$/data, i.e. /cluster/output/data/ in the example.
++ `data_src`: not used in current version
 + `gpunum`: The GPU device number to run on
 + `solver_file`: The path to solver file
 + `trainval_file`: The path to trainval file
@@ -74,12 +95,6 @@ trial_num 3
 
 ## Run the model
 
-#### Get data (optional)
-Run the following command to copy train.txt, test.txt, valid.txt from its original folder to $model_topdir$/data. Alternatively, you can directly output these files to $model_topdir$/data during data preparing phase.
-
-```
-python run.py getdata example/param.list
-```
 
 #### Train
 Train a CNN using the parameters provided in `param.list`. $trial_num$ number of independent training will be performed using the same parameters.
