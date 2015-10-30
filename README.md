@@ -3,47 +3,49 @@ A platform for training and testing convolutional neural network (CNN) based on 
 ## Prerequisite
 [Caffe and pycaffe](http://caffe.berkeleyvision.org/installation.html) (already included for mri-wrapper)
 
+## Quick run
+
+First replace all $REPO_HOME$ in the following files as the actual directory of the repository:
+
++ example/param.list
++ example/data/train.txt
++ example/data/valid.txt
++ example/data/test.txt
+
+
+#### Train
+
+```
+python run.py train example/param.list
+```
+
+#### Test
+
+```
+python run.py test example/param.list
+```
+
+#### Evaluate the testing result
+
+```
+python run.py test_eval example/param.list
+```
+
+The output will be under /$REPO_HOME$/example/basicmodel/version0/best_trial/
+
+
 ## Data preparation
 All the data should be put under $model_topdir$/data/, where `model_topdir` is the top folder of the output. 
 
-+ train.txt
-+ valid.txt
-+ test.txt
-+ train.batch0.hd5
-+ train.batch1.hd5
-+ ... (for more batches)
-+ valid.batch0.hd5
-+ valid.batch1.hd5
-+ ... (for more batches)
-+ test.batch0.hd5
-+ test.batch1.hd5
-+ ... (for more batches)
+An example list of data is [here](https://github.com/gifford-lab/caffe-cnn/tree/master/example/data)
 
 In the near future, we will provide the user with a script to generate all the data needed for CNN application on 1-D genomic sequence.
 
 #### Data matirx
-Training, validating and testing data should be prepared as 4-D matrix with dimension _iteration * channel * width * height_ in HDF5 format. A good practice is to partition the dataset into small batches. 
+Training, validating and testing data should be each prepared as 4-D matrix with dimension _number * channel * width * height_ in HDF5 format. A good practice is to partition the dataset into small batches. 
 
 #### Data manifest
-For each of train/valid/test set,  a train.txt/valid.txt/test.txt file is required to specify the ABSOLUTE PATH of all the HDF5 batches.
-
-
-For example if we have the following TRAINING data files under $model_topdir$/data/
-
-+ train.batch0.hd5
-+ train.batch1.hd5
-+ ... (for more batches)
-
-Then the content of train.txt should be :
-
-```
-/$model_topdir$/data/train.batch0.hd5
-/$model_topdir$/data/train.batch1.hd5
-...
-```
-
-
-
+For each of train/valid/test set,  a [train.txt](https://github.com/gifford-lab/caffe-cnn/tree/master/example/data/train.txt)/[valid.txt](https://github.com/gifford-lab/caffe-cnn/tree/master/example/data/valid.txt)/[test.txt](https://github.com/gifford-lab/caffe-cnn/tree/master/example/data/test.txt) file is required to specify the ABSOLUTE PATH of all the HDF5 batches in the set.
 
 
 ## Caffe model file preparation
@@ -93,29 +95,29 @@ trial_num 3
 + `trial_num`: The number of training trial.
 
 
+
 ## Run the model
 
 
 #### Train
-Train a CNN using the parameters provided in `param.list`. $trial_num$ number of independent training will be performed using the same parameters.
+Train a CNN using the parameters provided in `param.list`. $trial_num$ number of independent training will be performed using the same parameters. The output will be under $model_topdir$/$modelname$/$model_batchname$/
 
 
 ```
-python run.py train example/param.list
+python run.py train param.list
 ```
 
 #### Test
-Test the trained CNN on test set using the model with the best validation accuracy from all the iterations reported of all the $trial_num$ of models trained.
-
+First, from all the model files saved across different trials and iterations, the one with best validation accuracy will be picked. Then input the test data into this model go generate prediction output. All the ouput in test phase are under /$model_topdir$/$modelname$/$model_batchname$/best_trial/
 
 ```
-python run.py test example/param.list
+python run.py test param.list
 ```
 
 #### Evaluate the testing result
-Evaluate the performance on test set by accuracy and area under receiver operating curve (auROC)
+Evaluate the performance on test set by accuracy and area under receiver operating curve (auROC). The output is in the same output folder as test phase.
 
 
 ```
-python run.py test_eval example/param.list
+python run.py test_eval param.list
 ```

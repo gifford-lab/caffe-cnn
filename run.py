@@ -55,6 +55,7 @@ def main():
             os.system('rm -r ' + modeltopdir)
         os.makedirs(modeltopdir)
 
+        cwd = os.getcwd()
         for trial in range(int(params['trial_num'])):
             modeldir = join(modeltopdir,'trial'+str(trial))
             makedirs(modeldir)
@@ -67,7 +68,8 @@ def main():
             #train(os.path.basename(params['solver_file']),modeldir)
             outlog = os.path.join(modeldir,'train.out')
             errlog = os.path.join(modeldir,'train.err')
-            os.system(' '.join(['python',os.path.join(params['codedir'],'train.py'),os.path.join(modeldir,params['solver_file']),modeldir,params['gpunum'],'1 >',outlog,'2>',errlog]))
+            os.system(' '.join(['python',os.path.join(params['codedir'],'train.py'),os.path.basename(params['solver_file']),modeldir,params['gpunum'],'1 >',outlog,'2>',errlog]))
+            os.chdir(cwd)
         flag = True
 
     if params['order']=='test':
@@ -80,7 +82,7 @@ def main():
         cmd = ' '.join(['cp',params['deploy_file'], testdir])
         os.system(cmd)
         os.chdir(testdir)
-        test(params['deploy_file'],modeltopdir,os.path.join(params['model_topdir'],params['predict_filelist']),int(params['gpunum']),int(params['trial_num']),testdir)
+        test(os.path.basename(params['deploy_file']),modeltopdir,os.path.join(params['model_topdir'],params['predict_filelist']),int(params['gpunum']),int(params['trial_num']),testdir)
         flag = True
 
     if params['order']=='test_eval':
