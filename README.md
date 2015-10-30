@@ -108,7 +108,7 @@ python run.py train param.list
 ```
 
 #### Test
-First, from all the model files saved across different trials and iterations, the one with best validation accuracy will be picked. Then input the test data into this model go generate prediction output. All the ouput in test phase are under /$model_topdir$/$modelname$/$model_batchname$/best_trial/
+First, from all the model files saved across different trials and iterations, the one with best validation accuracy will be picked. Then input the test data into this model to generate prediction output. All the ouput in test phase are under /$model_topdir$/$modelname$/$model_batchname$/best_trial/
 
 ```
 python run.py test param.list
