@@ -1,0 +1,3 @@
+/$REPO_HOME$/example/data/train.h5.batch1
+/$REPO_HOME$/example/data/train.h5.batch2
+/$REPO_HOME$/example/data/train.h5.batch3
