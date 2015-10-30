@@ -67,15 +67,15 @@ This file specificies all the parameters in the model.
 Example : (example/param.list)
 
 ```
-model_topdir /cluster/output 
-data_src /cluster/originaldata
+model_topdir /$REPO_HOME$/example/
+data_src NA
 gpunum 0
 solver_file example/solver.prototxt
 trainval_file example/trainval.prototxt
 deploy_file example/deploy.prototxt
-codedir CAFFECNN_ROOT
+codedir $REPO_HOME$
 modelname basicmodel
-model_batchname trail0
+model_batchname version0
 predictmodel_batch trail0
 predict_filelist data/test.txt
 trial_num 3
