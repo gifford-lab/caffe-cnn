@@ -39,7 +39,11 @@ All the data should be put under $model_topdir$/data/, where `model_topdir` is t
 
 An example list of data is [here](https://github.com/gifford-lab/caffe-cnn/tree/master/example/data)
 
-In the near future, we will provide the user with a script to generate all the data needed for CNN application on 1-D genomic sequence.
+**_For mri-wrapper user, we now provide a python [script](https://github.com/gifford-lab/caffe-cnn/tree/master/embedH5.py) to automatically generate the corresponding data matrix and data manifest file from  1-D genomic sequence in [FASTA](https://github.com/gifford-lab/caffe-cnn/tree/master/example/sequence/sample.fasta) or [TSV](https://github.com/gifford-lab/caffe-cnn/tree/master/example/sequence/sample.tsv) format. The user still has to manually split the sequence data into train, valid and test set before using this script on each one of them. Check out the usage of the script by:_**
+ 
+ ```
+ python embedH5.py -h
+ ```
 
 #### Data matirx
 Training, validating and testing data should be each prepared as 4-D matrix with dimension _number * channel * width * height_ in HDF5 format. A good practice is to partition the dataset into small batches. 
