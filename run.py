@@ -82,7 +82,7 @@ def main():
         cmd = ' '.join(['cp',params['deploy_file'], testdir])
         os.system(cmd)
         os.chdir(testdir)
-        test(os.path.basename(params['deploy_file']),modeltopdir,os.path.join(params['model_topdir'],params['predict_filelist']),int(params['gpunum']),int(params['trial_num']),testdir)
+        test(os.path.basename(params['deploy_file']),modeltopdir,os.path.join(params['model_topdir'],params['predict_filelist']),int(params['gpunum']),int(params['trial_num']),testdir,params['optimwrt'])
         flag = True
 
     if params['order']=='test_eval':

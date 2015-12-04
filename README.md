@@ -83,6 +83,7 @@ model_batchname version0
 predictmodel_batch trail0
 predict_filelist data/test.txt
 trial_num 3
+optimwrt accuracy
 ```
 
 + `model_topdir`: The top output folder
@@ -97,6 +98,7 @@ trial_num 3
 + `predictmodel_batch`: The model version to test on
 + `predict_filelist`: The path of the test HDF5 file relative to `model_topdir` 
 + `trial_num`: The number of training trial.
++ `optimwrt`: choose the best trial wrt this metric (accuracy or loss)
 
 
 
