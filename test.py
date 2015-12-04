@@ -3,6 +3,7 @@ import matplotlib
 matplotlib.use('Agg')
 import sys,os,caffe,numpy as np,h5py
 from os.path import join
+from os import system
 
 def test(net_file,model_topdir,predict_file,gpunum,trialnum,outdir,keyword):
 
@@ -12,6 +13,7 @@ def test(net_file,model_topdir,predict_file,gpunum,trialnum,outdir,keyword):
     best_trial,best_iter = getBestRunAll(model_topdir,trialnum,'train.err',keyword)
     model_dir = join(model_topdir,'trial'+str(best_trial))
     model_file = os.path.join(model_dir,'train_iter_'+best_iter+'.caffemodel')
+    system(' '.join(['cp',model_file,join(outdir,'bestiter.caffemodel')]))
     outfile = os.path.join(outdir,'bestiter.pred')
 
     with open(join(outdir,'bestiter.info'),'w') as f:
