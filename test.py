@@ -5,7 +5,7 @@ import sys,os,caffe,numpy as np,h5py
 from os.path import join
 from os import system
 
-def test(net_file,model_topdir,predict_file,gpunum,trialnum,outdir,keyword):
+def test(net_file,model_topdir,predict_file,gpunum,trialnum,outdir,keyword,outputlayer):
 
     caffe.set_device(gpunum)
     caffe.set_mode_gpu()
@@ -30,18 +30,18 @@ def test(net_file,model_topdir,predict_file,gpunum,trialnum,outdir,keyword):
             fi    = h5py.File(batchfile, 'r')
             dataset = np.asarray(fi['data'])
             out = net.forward_all(data=dataset)
-            prob = np.vstack(np.asarray(out['prob']))
+            prob = np.vstack(np.asarray(out[outputlayer]))
             for out in prob:
                 f.write('%s\n' % '\t'.join([str(x) for x in out]))
 
 def getBestRunAll(modeltopdir,trialnum,logfile,keyword):
     best_trial = -1
     best_iter = -1
-    best_metric = -1
+    best_metric = ''
     for trial in range(trialnum):
         modeldir = join(modeltopdir,'trial'+str(trial))
         t_iter,t_metric = getBestRun(modeldir,logfile,keyword)
-        if t_metric > best_metric:
+        if best_metric == '' or t_metric > best_metric:
             best_metric = t_metric
             best_trial = trial
             best_iter = t_iter

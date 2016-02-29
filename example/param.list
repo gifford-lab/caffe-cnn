@@ -11,3 +11,4 @@ predictmodel_batch trail0
 predict_filelist data/test.txt
 trial_num 3
 optimwrt accuracy
+outputlayer prob
