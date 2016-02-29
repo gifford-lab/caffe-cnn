@@ -1,36 +1,104 @@
 import argparse,pwd,os,numpy as np,h5py
-from os.path import splitext
+from os.path import splitext,exists,dirname
+from os import makedirs
+from itertools import izip
 
-def outputHDF5(data,label,filename):
+def outputHDF5(data,label,filename,labelname,dataname):
     print 'data shape: ',data.shape
     comp_kwargs = {'compression': 'gzip', 'compression_opts': 1}
     label = [[x.astype(np.float32)] for x in label]
     with h5py.File(filename, 'w') as f:
-    	f.create_dataset('data', data=data, **comp_kwargs)
-    	f.create_dataset('label', data=label, **comp_kwargs)
+    	f.create_dataset(dataname, data=data, **comp_kwargs)
+    	f.create_dataset(labelname, data=label, **comp_kwargs)
 
-def seq2feature(data,mapper,label,out_filename,batchsize,worddim):
+def seq2feature(data,mapper,label,out_filename,worddim,labelname,dataname):
     out = []
-    lastprint = 0;
-    cnt = 0
-    batchnum = 0;
     for seq in data:
-        mat = np.asarray([mapper[element] if element in mapper else np.random.rand(worddim)*2-1 for element in seq])
+        mat = embed(seq,mapper,worddim)
         result = mat.transpose()
         result1 = [ [a] for a in result]
         out.append(result1)
-        cnt = cnt + 1
-        if cnt % batchsize ==0:
+    outputHDF5(np.asarray(out),label,out_filename,labelname,dataname)
+
+def embed(seq,mapper,worddim):
+    mat = np.asarray([mapper[element] if element in mapper else np.random.rand(worddim)*2-1 for element in seq])
+    return mat
+
+def seq2feature_siamese(data1,data2,mapper,label,out_filename,worddim,labelname,dataname):
+    out = []
+    datalen = len(data1)
+    for dataidx in range(datalen):
+        mat = np.asarray([embed(data1[dataidx],mapper,worddim),embed(data2[dataidx],mapper,worddim)])
+        result = mat.transpose((2,0,1))
+        out.append(result)
+    outputHDF5(np.asarray(out),label,out_filename,labelname,dataname)
+
+def convert(infile,labelfile,outfile,mapper,worddim,batchsize,labelname,dataname):
+    with open(infile) as seqfile, open(labelfile) as labelfile:
+        cnt = 0
+        seqdata = []
+        label = []
+        batchnum = 0
+        for x,y in izip(seqfile,labelfile):
+            seqdata.append(list(x.strip().split()[1]))
+            label.append(float(y.strip()))
+            cnt = (cnt+1)% batchsize
+            if cnt == 0:
+                batchnum = batchnum + 1
+                seqdata = np.asarray(seqdata)
+                label = np.asarray(label)
+                t_outfile = outfile + '.batch' + str(batchnum)
+                seq2feature(seqdata,mapper,label,t_outfile,worddim,labelname,dataname)
+                seqdata = []
+                label = []
+        if cnt >0:
             batchnum = batchnum + 1
-            t_filename = out_filename + '.batch' + str(batchnum)
-            outputHDF5(np.asarray(out),label[lastprint:cnt],t_filename)
-            lastprint = cnt;
-            out = []
-    if len(out)>0:
-        batchnum = batchnum + 1
-        t_filename = out_filename + '.batch' + str(batchnum)
-        outputHDF5(np.asarray(out),label[lastprint:cnt],t_filename)
+            seqdata = np.asarray(seqdata)
+            label = np.asarray(label)
+            t_outfile = outfile + '.batch' + str(batchnum)
+            seq2feature(seqdata,mapper,label,t_outfile,worddim,labelname,dataname)
     return batchnum
+
+
+def convert_siamese(infile1,infile2,labelfile,outfile,mapper,worddim,batchsize,labelname,dataname):
+    with open(infile1) as seqfile1, open(infile2) as seqfile2,open(labelfile) as labelfile:
+        cnt = 0
+        seqdata1 = []
+        seqdata2 = []
+        label = []
+        batchnum = 0
+        for x1,x2,y in izip(seqfile1,seqfile2,labelfile):
+            seqdata1.append(list(x1.strip().split()[1]))
+            seqdata2.append(list(x2.strip().split()[1]))
+            label.append(float(y.strip()))
+            cnt = (cnt+1)% batchsize
+            if cnt == 0:
+                batchnum = batchnum + 1
+                seqdata1 = np.asarray(seqdata1)
+                seqdata2 = np.asarray(seqdata2)
+                label = np.asarray(label)
+                t_outfile = outfile + '.batch' + str(batchnum)
+                seq2feature_siamese(seqdata1,seqdata2,mapper,label,t_outfile,worddim,labelname,dataname)
+                seqdata1 = []
+                seqdata2 = []
+                label = []
+
+        if cnt > 0:
+            batchnum = batchnum + 1
+            seqdata1 = np.asarray(seqdata1)
+            seqdata2 = np.asarray(seqdata2)
+            label = np.asarray(label)
+            t_outfile = outfile + '.batch' + str(batchnum)
+            seq2feature_siamese(seqdata1,seqdata2,mapper,label,t_outfile,worddim,labelname,dataname)
+
+    return batchnum
+
+def manifest(out_filename,batchnum,prefix):
+    locfile = out_filename.split('.')[0] + '.txt'
+    with open(locfile,'w') as f:
+        for i in range(batchnum):
+            f.write('.'.join(['/'.join([prefix]+out_filename.split('/')[-2:]),'batch'+str(i+1)])+'\n')
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Convert sequence and target for Caffe")
@@ -38,65 +106,39 @@ def parse_args():
 
     # Positional (unnamed) arguments:
     parser.add_argument("infile",  type=str, help="Sequence in FASTA/TSV format (with .fa/.fasta or .tsv extension)")
-    #parser.add_argument("infile_type",type=str,help="Format of input (FASTA/TSV)")
     parser.add_argument("labelfile",  type=str,help="Label of the sequence. One number per line")
     parser.add_argument("outfile",  type=str, help="Output file (example: $MODEL_TOPDIR$/data/train.h5). ")
 
     # Optional arguments:
-    parser.add_argument("-m", "--mapper", dest="mapper", default="", help="A TSV file mapping each nucleotide to a vector. The first column should be the nucleotide, and the rest denote the vectors. (Default mapping: A:[1,0,0,0],C:[0,1,0,0],G:[0,0,1,0],T:[0,0,0,1])")
+    parser.add_argument("-m", "--mapperfile", dest="mapperfile", default="", help="A TSV file mapping each nucleotide to a vector. The first column should be the nucleotide, and the rest denote the vectors. (Default mapping: A:[1,0,0,0],C:[0,1,0,0],G:[0,0,1,0],T:[0,0,0,1])")
+    parser.add_argument("-i", "--infile2", dest="infile2", default="", help="The paired input file for siamese network")
     parser.add_argument("-b", "--batch", dest="batch", type=int,default=5000, help="Batch size for data storage (Defalt:5000)")
+    parser.add_argument("-p", "--prefix", dest="maniprefix",default='/data', help="The model_dir (Default: /data . This only works for mri-wrapper)")
+    parser.add_argument("-l", "--labelname", dest="labelname",default='label', help="The group name for labels in the HDF5 file")
+    parser.add_argument("-d", "--dataname", dest="dataname",default='data', help="The group name for data in the HDF5 file")
 
     return parser.parse_args()
-
-
-def output(region,mapper,label,out_filename,batchsize,worddim):
-    batch_num = seq2feature(region,mapper,label,out_filename,batchsize,worddim)
-    locfile = out_filename.split('.')[0] + '.txt'
-    with open(locfile,'w') as f:
-        for i in range(batch_num):
-            f.write('.'.join(['/'.join(['/data']+out_filename.split('/')[-2:]),'batch'+str(i+1)])+'\n')
-
-
-def readFasta(fafile):
-    with open(fafile,'r') as f:
-        cnt = 0
-        seqdata = []
-        for x in f:
-            cnt = (cnt+1)%2
-            if cnt == 0:
-                seqdata.append(x.strip().split())
-    return seqdata
-
-def readTSV(infile):
-    with open(infile) as f:
-        seqdata = [x.strip().split()[1] for x in f]
-    return seqdata
 
 if __name__ == "__main__":
 
     args = parse_args()
-    filename, file_extension = splitext(args.infile)
-    assert(file_extension == '.fasta' or file_extension == '.fa' or file_extension  == '.tsv')
 
-    if file_extension == '.fasta' or file_extension == '.fa':
-        seqdata = readFasta(args.infile)
-    else:
-        seqdata = readTSV(args.infile)
+    outdir = dirname(args.outfile)
+    if not exists(outdir):
+        makedirs(outdir)
 
-    seqdata = np.asarray([list(x) for x in seqdata])
-
-    with open(args.labelfile,'r') as f:
-        label = [int(x.strip()) for x in f]
-    label = np.asarray(label)
-    if args.mapper == "":
+    if args.mapperfile == "":
         args.mapper = {'A':[1,0,0,0],'C':[0,1,0,0],'G':[0,0,1,0],'T':[0,0,0,1]}
     else:
         args.mapper = {}
-        with open(args.mapper,'r') as f:
+        with open(args.mapperfile,'r') as f:
             for x in f:
                 line = x.strip().split()
                 word = line[0]
                 vec = [float(item) for item in line[1:]]
                 args.mapper[word] = vec
-
-    output(seqdata,args.mapper,label,args.outfile,args.batch,len(args.mapper['A']))
+    if args.infile2 == '':
+        batchnum = convert(args.infile,args.labelfile,args.outfile,args.mapper,len(args.mapper['A']),args.batch,args.labelname,args.dataname)
+    else:
+        batchnum = convert_siamese(args.infile,args.infile2,args.labelfile,args.outfile,args.mapper,len(args.mapper['A']),args.batch,args.labelname,args.dataname)
+    manifest(args.outfile,batchnum,args.maniprefix)
