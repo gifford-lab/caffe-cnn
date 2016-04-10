@@ -44,9 +44,9 @@ python run.py test_eval example/param.list
 + Use this [script](https://github.com/gifford-lab/caffe-cnn/tree/master/embedH5.py) to transform the sequence and target to the data format that Caffe can take. The "outfile" argument for training, validation and testing set should be the following respectively:
  
  	```
- $MODEL_TOPDIR$/data/train.h5
- $MODEL_TOPDIR$/data/valid.h5
- $MODEL_TOPDIR$/data/test.h5
+ $output_topdir$/data/train.h5
+ $output_topdir$/data/valid.h5
+ $output_topdir$/data/test.h5
  ```
  Type the following for more details on how to use the script:
  
