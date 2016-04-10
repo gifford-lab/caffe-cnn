@@ -41,16 +41,26 @@ python run.py test_eval example/param.list
 #### For DNA Sequence data
 + Prepare your sequence of training, validation and testing set separately in [TSV](https://github.com/gifford-lab/caffe-cnn/tree/master/example/sequence/sample.tsv) format.
 + Prepare the target (the label or real value you want to fit) for your training, validation and testing set separately. One line for each sample.
-+ Use this [script](https://github.com/gifford-lab/caffe-cnn/tree/master/embedH5.py) to transform the sequence and target to the data format that Caffe can take. The "outfile" argument for training, validation and testing set should be the following respectively:
++ Use this [script](https://github.com/gifford-lab/caffe-cnn/tree/master/embedH5.py) to transform the sequence and target to the data format that Caffe can take. 
+	+ Usage example:
+	
+		```
+		python embedH5.py tsvfile targetfile outfile -p $output_dir$
+		```
+	+ __Mri-wrapper users shouldn't include the "-p" argument.__
+	
+	+ The "outfile" argument for training, validation and testing set should be the following respectively:
  
- 	```
+ 		```
  $output_topdir$/data/train.h5
  $output_topdir$/data/valid.h5
  $output_topdir$/data/test.h5
  ```
- Type the following for more details on how to use the script:
+	
+	
+ 	+ Type the following for details on other optional arguments:
  
-	```
+		```
  python embedH5.py -h
  	```
  	
