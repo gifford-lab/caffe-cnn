@@ -1,4 +1,4 @@
-output_topdir /cluster/zeng/code/research/caffe-cnn//example/
+output_topdir $REPO_HOME$/example/
 gpunum 2
 caffemodel_topdir example/
 model_name basicmodel
