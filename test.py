@@ -1,7 +1,7 @@
 # Make sure that caffe is on the python path:
 import matplotlib
 matplotlib.use('Agg')
-import sys,os,caffe,numpy as np,h5py
+import sys,os,caffe,numpy as np,h5py,cPickle
 from os.path import join
 from os import system
 
@@ -15,6 +15,10 @@ def test(net_file,model_topdir,predict_file,gpunum,trialnum,outdir,keyword,outpu
     model_file = os.path.join(model_dir,'train_iter_'+best_iter+'.caffemodel')
     system(' '.join(['cp',model_file,join(outdir,'bestiter.caffemodel')]))
     outfile = os.path.join(outdir,'bestiter.pred')
+    outputlayer_split = outputlayer.split('_')
+    outputlayer_cnt = len(outputlayer_split)
+    flag = False
+    outdata = []
 
     with open(join(outdir,'bestiter.info'),'w') as f:
 	f.write('best_trial\tbest_iter\n')
@@ -29,10 +33,17 @@ def test(net_file,model_topdir,predict_file,gpunum,trialnum,outdir,keyword,outpu
         for batchfile in files:
             fi    = h5py.File(batchfile, 'r')
             dataset = np.asarray(fi['data'])
-            out = net.forward_all(data=dataset)
-            prob = np.vstack(np.asarray(out[outputlayer]))
-            for out in prob:
-                f.write('%s\n' % '\t'.join([str(x) for x in out]))
+            out = net.forward_all(data=dataset,blobs=outputlayer_split)
+            for i in range(outputlayer_cnt):
+                if not flag:
+                    outdata.append( np.vstack(np.asarray(out[outputlayer_split[i]])) )
+                else:
+                    outdata[i] = np.vstack(outdata[i],np.vstack(np.asarray(out[outputlayer_split[i]])))
+            flag = True
+        for out in outdata[0]:
+            f.write('%s\n' % '\t'.join([str(x) for x in out]))
+    with open(os.path.join(outdir,'bestiter.pred.params.pkl'),'wb') as f:
+        cPickle.dump((outdata,outputlayer_split),f,protocol=cPickle.HIGHEST_PROTOCOL)
 
 def getBestRunAll(modeltopdir,trialnum,logfile,keyword):
     best_trial = -1

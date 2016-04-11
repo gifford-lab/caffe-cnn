@@ -14,19 +14,19 @@ We provide some toy data for you to quickly play around.
 	+ example/data/test.txt
 
 
-+ Train a simple neural network on the toy training data
++ Train a simple neural network on the toy training data:
 	
 	```
 python run.py train example/param.list
 ```
 
-+ Use the trained network to make prediction on the toy test set
++ Find the model snapshot with the best performance on validation set and use it to make prediction on the toy test set:
 
 	```
 python run.py test example/param.list
 ```
 
-+ Evaluate the testing result
++ Evaluate the prediction:
 
 	```
 python run.py test_eval example/param.list
@@ -34,6 +34,7 @@ python run.py test_eval example/param.list
 
 	The output will be under $REPO_HOME$/example/basicmodel/version0/best_trial/
 
+If you wish to now more about what's going on, scroll down to the 'Ready to go' section for more details on how to run the program.
 
 ## Data preparation
 
@@ -113,14 +114,14 @@ outputlayer prob
 + `batch2predict`: The model version to make prediction with.
 + `trial_num`: The number of training trial.
 + `optimwrt`: choose the best trial wrt this metric (accuracy or loss)
-+ `outputlayer`: The name of the output blob that will be used as prediction in test phase
++ `outputlayer`: The name of the layer of which the output you wish to save when you apply the model on the test set. Different layers should be separated by "_" for example "prob_fc2". The output of the first layer specified will be saved to a text file named 'bestiter.pred' and the output of all layers will be saved in a Pickle object named 'bestiter.pred.params.pkl'. They are both under $output_topdir$/$model_name$/$batch_name$/best_trial/.
 
 
 ## Ready to go!
 
 
 #### Train a neural network
-$trial_num$ number of independent training will be performed using the same parameters. The output will be under $output_topdir$/$model_name$/$batch_name$/
+$trial_num$ number of independent training will be performed using the same parameters. The output will be under $output_topdir$/$model_name$/$batch_name$/. File 'train.err' saves the log for each trial.
 
 
 ```
@@ -128,14 +129,14 @@ python run.py train param.list
 ```
 
 #### Make prediction with the trained neural network
-First, from all the model files saved across different trials and iterations, the one with best validation accuracy will be picked. Then input the test data into this model to generate prediction output. All the ouput in test phase are under /$output_topdir$/$model_name$/$batch_name$/best_trial/
+First, from all the model files saved across different trials and iterations, the one with best validation performance (evaluated by 'optimwrt') will be picked. Then the test data will be loaded into this model to generate prediction under $output_topdir$/$model_name$/$batch_name$/best_trial/ . See the explanation for 'outputlayer' in last section for more detail.
 
 ```
 python run.py test param.list
 ```
 
 #### Evaluate the prediction performance
-Evaluate the performance on test set by accuracy and area under receiver operating curve (auROC). The output is in the same output folder as test phase.
+Evaluate the performance on test set by accuracy and area under receiver operating curve (auROC). It takes 'bestiter.pred' as input and the output is 'bestiter.pred.eval' in the same folder.
 
 
 ```
