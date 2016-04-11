@@ -65,15 +65,16 @@ python run.py test_eval example/param.list
  	```
  	
 #### For other data type
-You will need to manually prepare the following data under $output_topdir$/data/ ([Example](https://github.com/gifford-lab/caffe-cnn/tree/master/example/data))
+You will need to manually prepare the following data under $output_topdir$/data/ 
 
 + Data matirx
 
-	Training, validating and testing data should be each prepared as 4-D matrix with dimension _number * channel * width * height_ in HDF5 format. A good practice is to partition the dataset into small batches. 
+	Training, validating and testing data should be each prepared as 4-D matrix with dimension _number * channel * width * height_ in HDF5 format. A good practice is to partition the dataset into small batches. ([Example](https://github.com/gifford-lab/caffe-cnn/tree/master/example/data))
 
 + Data manifest
 
 	For each of train/valid/test set,  a [train.txt](https://github.com/gifford-lab/caffe-cnn/tree/master/example/data/train.txt)/[valid.txt](https://github.com/gifford-lab/caffe-cnn/tree/master/example/data/valid.txt)/[test.txt](https://github.com/gifford-lab/caffe-cnn/tree/master/example/data/test.txt) file is required to specify the ABSOLUTE PATH of all the HDF5 batches in the set.
+	__Mri-wrapper users should set the top folder as "/data" so that for example each line in [train.txt](https://github.com/gifford-lab/caffe-cnn/tree/master/example/data/train.txt) should be /data/data/train.h5.batchX__
 
 
 ## Caffe model file preparation
