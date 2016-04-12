@@ -38,7 +38,7 @@ def test(net_file,model_topdir,predict_file,gpunum,trialnum,outdir,keyword,outpu
                 if not flag:
                     outdata.append( np.vstack(np.asarray(out[outputlayer_split[i]])) )
                 else:
-                    outdata[i] = np.vstack(outdata[i],np.vstack(np.asarray(out[outputlayer_split[i]])))
+                    outdata[i] = np.vstack((outdata[i],np.vstack(np.asarray(out[outputlayer_split[i]]))))
             flag = True
         for out in outdata[0]:
             f.write('%s\n' % '\t'.join([str(x) for x in out]))
