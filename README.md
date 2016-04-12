@@ -116,6 +116,8 @@ outputlayer prob
 + `optimwrt`: choose the best trial wrt this metric (accuracy or loss)
 + `outputlayer`: The name of the layer of which the output you wish to save when you apply the model on the test set. Different layers should be separated by "_" for example "prob_fc2". The output of the first layer specified will be saved to a text file named 'bestiter.pred' and the output of all layers will be saved in a Pickle object named 'bestiter.pred.params.pkl'. They are both under $output_topdir$/$model_name$/$batch_name$/best_trial/.
 
+Optional argument:
++ predict_filelist: the relative (to 'output_topdir') path of the file containing all the h5py files to predict on. (default: data/test.txt)
 
 ## Ready to go!
 

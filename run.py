@@ -22,6 +22,7 @@ def main():
 
     params = {}
     params['order'] = order
+    params['predict_filelist'] = 'data/test.txt'
     for i in range(len(paramdata)):
         line = paramdata[i].strip().split()
         params.update({line[0]:line[1]})
@@ -40,15 +41,12 @@ def main():
     assert('optimwrt' in params.keys())
     assert('outputlayer' in params.keys())
 
-
-
     ctime = strftime("%Y-%m-%d-%H-%M-%S", localtime())
     datadir = os.path.abspath(os.path.join(params['output_topdir'],'data'))
 
     params['solver_file'] = join(params['caffemodel_topdir'],'solver.prototxt')
     params['trainval_file'] = join(params['caffemodel_topdir'],'trainval.prototxt')
     params['deploy_file'] = join(params['caffemodel_topdir'],'deploy.prototxt')
-    params['predict_filelist'] = 'data/test.txt'
 
     flag = False;
 
