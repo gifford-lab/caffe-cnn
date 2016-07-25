@@ -3,10 +3,11 @@ import matplotlib
 matplotlib.use('Agg')
 import sys,os
 from time import localtime, strftime
+from helper import getBestRunAll
 from test import test
 from test_eval import test_eval
-from os import system,makedirs
-from os.path import join,abspath,exists,realpath,dirname
+from os import system,makedirs,chdir,getcwd
+from os.path import join,abspath,exists,realpath,dirname,basename
 
 def main():
     if len(sys.argv)!=3:
@@ -32,17 +33,11 @@ def main():
         print key + ': ' + params[key]
     print '################################'
 
-    assert('output_topdir' in params.keys())
-    assert('gpunum' in params.keys())
-    assert('caffemodel_topdir' in params.keys())
-    assert('model_name' in params.keys())
-    assert('batch_name' in params.keys())
-    assert('batch2predict' in params.keys())
-    assert('optimwrt' in params.keys())
-    assert('outputlayer' in params.keys())
+    for code in ['output_topdir','gpunum','caffemodel_topdir','model_name','batch_name','batch2predict','optimwrt','outputlayer']:
+        assert(code in params.keys())
 
     ctime = strftime("%Y-%m-%d-%H-%M-%S", localtime())
-    datadir = os.path.abspath(os.path.join(params['output_topdir'],'data'))
+    datadir = abspath(join(params['output_topdir'],'data'))
 
     params['solver_file'] = join(params['caffemodel_topdir'],'solver.prototxt')
     params['trainval_file'] = join(params['caffemodel_topdir'],'trainval.prototxt')
@@ -55,39 +50,43 @@ def main():
             params['batch_name'] = ctime
 
         modeltopdir = abspath(join(params['output_topdir'],params['model_name'],params['batch_name']))
-        if os.path.exists(modeltopdir):
+        if exists(modeltopdir):
             print 'model folder exists, will remove'
-            os.system('rm -r ' + modeltopdir)
-        os.makedirs(modeltopdir)
+            system('rm -r ' + modeltopdir)
+        makedirs(modeltopdir)
 
-        cwd = os.getcwd()
+        cwd = getcwd()
         for trial in range(int(params['trial_num'])):
             modeldir = join(modeltopdir,'trial'+str(trial))
             makedirs(modeldir)
-            cmd = ' '.join(['cp ',params['solver_file'], modeldir])
-            os.system(cmd)
-            cmd = ' '.join(['cp ',params['trainval_file'], modeldir])
-            os.system(cmd)
+            system(' '.join(['cp ',params['solver_file'], modeldir]))
+            system(' '.join(['cp ',params['trainval_file'], modeldir]))
 
-            os.chdir(modeldir)
-            #train(os.path.basename(params['solver_file']),modeldir)
-            outlog = os.path.join(modeldir,'train.out')
-            errlog = os.path.join(modeldir,'train.err')
-            os.system(' '.join(['python',os.path.join(fcwd,'train.py'),os.path.basename(params['solver_file']),modeldir,params['gpunum'],'1 >',outlog,'2>',errlog]))
-            os.chdir(cwd)
-        flag = True
+            chdir(modeldir)
+            outlog = join(modeldir,'train.out')
+            errlog = join(modeldir,'train.err')
+            system(' '.join(['python',join(fcwd,'train.py'),basename(params['solver_file']),modeldir,params['gpunum'],'1 >',outlog,'2>',errlog]))
+            chdir(cwd)
 
-    if params['order']=='test':
-        modeltopdir = os.path.abspath(os.path.join(params['output_topdir'],params['model_name'],params['batch2predict']))
+        ### Get the best performing iteration among all the trials
+        best_trial,best_iter = getBestRunAll(modeltopdir,int(params['trial_num']),'train.err',params['optimwrt'])
+        model_file = join(modeltopdir,'trial'+str(best_trial),'train_iter_'+best_iter+'.caffemodel')
         testdir = join(modeltopdir,'best_trial')
         if exists(testdir):
             print 'testdir '+testdir+' exists, will be removed'
             system('rm -r ' + testdir)
         makedirs(testdir)
-        cmd = ' '.join(['cp',params['deploy_file'], testdir])
-        os.system(cmd)
-        os.chdir(testdir)
-        test(os.path.basename(params['deploy_file']),modeltopdir,os.path.join(params['output_topdir'],params['predict_filelist']),int(params['gpunum']),int(params['trial_num']),testdir,params['optimwrt'],params['outputlayer'])
+        system(' '.join(['cp',model_file,join(testdir,'bestiter.caffemodel')]))
+        system(' '.join(['cp',params['deploy_file'], testdir]))
+        with open(join(testdir,'bestiter.info'),'w') as f:
+	    f.write('best_trial\tbest_iter\n')
+	    f.write('%d\t%s\n' % (best_trial,best_iter))
+	flag = True
+
+    if params['order']=='test':
+        modeltopdir = abspath(join(params['output_topdir'],params['model_name'],params['batch2predict']))
+        testdir = join(modeltopdir,'best_trial')
+        test(params['deploy_file'],join(testdir,'bestiter.caffemodel'),join(params['output_topdir'],params['predict_filelist']),int(params['gpunum']),testdir,params['outputlayer'])
         flag = True
 
     if params['order']=='test_eval':
@@ -96,6 +95,12 @@ def main():
         real_f = join(params['output_topdir'],params['predict_filelist'])
         outfile = join(pred_topdir,'bestiter.pred.eval')
         test_eval(pred_f,real_f,outfile)
+        flag = True
+
+    if params['order'] == 'pred':
+        for code in ['deploy2predictW','caffemodel2predictW','data2predict','predict_outdir']:
+            assert(code in params.keys())
+        test(params['deploy2predictW'],params['caffemodel2predictW'],params['data2predict'],int(params['gpunum']),params['predict_outdir'],params['outputlayer'])
         flag = True
 
     if not flag:

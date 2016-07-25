@@ -1,9 +1,13 @@
-output_topdir $REPO_HOME$/example/
-gpunum 2
+output_topdir example/
+gpunum 0
 caffemodel_topdir example/
 model_name basicmodel
 batch_name version0
 batch2predict version0
 trial_num 3
 optimwrt accuracy
-outputlayer prob
+outputlayer prob_fc2
+deploy2predictW example/newdata/deploy.prototxt
+caffemodel2predictW example/newdata/bestiter.caffemodel
+data2predict example/newdata/test.txt
+predict_outdir example/newdata_out
